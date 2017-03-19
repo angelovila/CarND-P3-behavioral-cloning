@@ -27,15 +27,46 @@ for line in lines:
 
 	measurements.append(measurement)
 
+###TODO make images and measurements into numbpy array
+images = np.array(images)
+measurements = np.array(measurements)
+
+
+
+
+
 ############ flat model  to start#########
 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense
+from keras.layers import Flatten, Dense, Lambda
+from keras.layers.convolutional import Convolution2D
 
+
+
+#################### basic network############
 model = Sequential()
+#model.add(Lambda(lambda x: x/ 255.0 - 0.5, input shape=(160,320,3)))
+#model.add(Flatten())  # no need to add input shape if first layer is preprocessing (normalize, mean center)
 model.add(Flatten(input_shape=(160,320,3)))
 model.add(Dense(1))
 
+
+#########################################
+##################LeNet##################
+"""
+model = Sequential()
+model.add(Lambda(lambda x: x/255.0 - 0.5, input shape=(160,320,3)))
+model.add(Convolution2D(6,5,5,activation="relu"))
+model.add(MaxPooling2D())
+model.add(Convolution2D(6,5,5,activation="relu"))
+model.add(MaxPooling2D())
+model.add(Flatten())
+model.add(Dense(120))
+model.add(Dense(84))
+model.add(Dense(1))
+
+"""
+###################
 model.compile(loss='mse', optimizers='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
 
