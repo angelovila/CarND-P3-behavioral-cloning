@@ -12,26 +12,62 @@ with open('../data/driving_log.csv') as csvfile:
 		lines.append(line)
 		#this saves training data from file.csv into a python variable
 
-images = []
+images_center = []
+images_left = []
+images_right = []
 measurements = []
+measurements_left = []
+measurements_right = []
+steering_correction = 0.2  # TODO update steering measurement for left and right images
+ec2_image_folder = '../data/IMG/'  #TODO update to actual location of images when on ec2
 for line in lines:
 	source_path = line[0]
-	filename = source_path.split('/')[-1]
-	current_path = '../data/IMG/' + filename    ##TODO update to actual location of images when on ec2
-	image = cv2.imread(current_path) #opens the image, into a np array
-	images.append(image) #saves an image np array into images list
+	#get filenames of center, left, right images
+	filename_center_image = source_path.split('/')[-1]
+	filename_left_image = line[1].split('/')[-1]
+	filename_right_image = line[2].split('/')[-1]
+
+	#update to correspond to ec2 locations
+	current_path_center = ec2_image_folder + filename_center_image
+	current_path_left = ec2_image_folder + filename_left_image
+	current_path_right = ec2_image_folder + filename_right_image
+
+	#save images to a list
+	image_center = cv2.imread(current_path_center) #opens the image, into a np array
+	images_center.append(image_center) #saves an image np array into images list
 	#below line gets the steering measurement from the driving_log.csv
 	#steering data is the 4th data in the csv, therefore line[3]
+	image_left = cv2.imread(current_path_left)
+	images_left.append(image_center)
+	image_right = cv2.imread(current_path_right)
+	images_right.append(image_center)
+
+	#get steering angle, with steering correction for left and right images
 	measurement = float(line[3])
-	
+	measurements_center.append(measurement)
+	measurements_left.append(measurement + steering_correction)
+	measurements_right.append(measurement - steering_correction)
 
-	measurements.append(measurement)
-
-###TODO make images and measurements into numbpy array
-images = np.array(images)
+###TODO make images and measurements into numpy array
+images_center = np.array(images_center)
 measurements = np.array(measurements)
 
 
+
+
+
+####### flip images and measurements
+augmented_images = []
+augmented_measurements = []
+
+for image, measurement in zip(images_center, measurements):
+	augemented_images.append(image)
+	augmented_measurements.append(measurement)
+	augemented_images.append(cv2.flip(image,1))
+	augmented_measurements.append(measurement*-1.0)
+
+X_train = np.array(augmented_images)   #only contains center images
+y_train = np.array(augmented_measurements)   #only contains center images
 
 
 
@@ -40,6 +76,7 @@ measurements = np.array(measurements)
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda
 from keras.layers.convolutional import Convolution2D
+from keras.layers.pooloing import MaxPooling2D
 
 
 
@@ -66,6 +103,10 @@ model.add(Dense(84))
 model.add(Dense(1))
 
 """
+
+#### extras for reference
+#model.add(Dropout(0.5))
+
 ###################
 model.compile(loss='mse', optimizers='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
