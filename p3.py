@@ -61,16 +61,18 @@ augmented_images = []
 augmented_measurements = []
 
 for image, measurement in zip(images_center, measurements_center):
-	augemented_images.append(image)
+	augmented_images.append(image)
 	augmented_measurements.append(measurement)
-	augemented_images.append(cv2.flip(image,1))
+	augmented_images.append(cv2.flip(image,1))
 	augmented_measurements.append(measurement*-1.0)
 
-X_train = np.array(augmented_images)   #only contains center images
-y_train = np.array(augmented_measurements)   #only contains center images
+augmented_images  = np.array(augmented_images)   #only contains center images
+augmented_measurements = np.array(augmented_measurements)   #only contains center images
+images_left = np.array(images_left)
+images_right = np.array(images_right)
 
-images_all.extend(augmented_images, images_left, images_right)
-measurements_all.extend(augmented_measurements, measurements_left, measurements_right)
+images_all = augmented_images + images_left + images_right
+measurements_all = augmented_measurements + measurements_left +measurements_right
 
 X_train = np.array(images_all)
 y_train = np.array(measurements_all)
