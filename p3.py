@@ -6,7 +6,7 @@ import numpy as np
 lines = []
 
 ##TODOdouble check location of file when uploaded to ec2
-with open('../data/driving_log.csv') as csvfile:
+with open('../training//driving_log.csv') as csvfile:
 	reader = csv.reader(csvfile)
 	for line in reader:
 		lines.append(line)
@@ -19,9 +19,10 @@ images_all = []
 measurements = []
 measurements_left = []
 measurements_right = []
+measurements_center = []
 measurements_all = []
 steering_correction = 0.2  # TODO update steering measurement for left and right images
-ec2_image_folder = '../data/IMG/'  #TODO update to actual location of images when on ec2
+ec2_image_folder = '../training/IMG/'  #TODO update to actual location of images when on ec2
 for line in lines:
 	source_path = line[0]
 	#get filenames of center, left, right images
@@ -120,7 +121,7 @@ model = Sequential()
 #model.add(Lambda(lambda x: x/255.0 - 0.5))  #remove line below to use cropped images
 ############## remove line lambda to use cropping #####
 
-model.add(Lambda(lambda x: x/255.0 - 0.5, input shape=(160,320,3)))
+model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape=(160,320,3)))
 model.add(Convolution2D(6,5,5,activation="relu"))
 model.add(MaxPooling2D())
 model.add(Convolution2D(6,5,5,activation="relu"))
