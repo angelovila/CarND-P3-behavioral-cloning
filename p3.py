@@ -15,9 +15,11 @@ with open('../data/driving_log.csv') as csvfile:
 images_center = []
 images_left = []
 images_right = []
+images_all = []
 measurements = []
 measurements_left = []
 measurements_right = []
+measurements_all = []
 steering_correction = 0.2  # TODO update steering measurement for left and right images
 ec2_image_folder = '../data/IMG/'  #TODO update to actual location of images when on ec2
 for line in lines:
@@ -50,17 +52,14 @@ for line in lines:
 
 ###TODO make images and measurements into numpy array
 images_center = np.array(images_center)
-measurements = np.array(measurements)
+measurements_center = np.array(measurements_center)
 
 
-
-
-
-####### flip images and measurements
+####### copy and flip center_images
 augmented_images = []
 augmented_measurements = []
 
-for image, measurement in zip(images_center, measurements):
+for image, measurement in zip(images_center, measurements_center):
 	augemented_images.append(image)
 	augmented_measurements.append(measurement)
 	augemented_images.append(cv2.flip(image,1))
@@ -68,6 +67,28 @@ for image, measurement in zip(images_center, measurements):
 
 X_train = np.array(augmented_images)   #only contains center images
 y_train = np.array(augmented_measurements)   #only contains center images
+
+images_all.extend(augmented_images, images_left, images_right)
+measurements_all.extend(augmented_measurements, measurements_left, measurements_right)
+
+X_train = np.array(images_all)
+y_train = np.array(measurements_all)
+
+
+
+
+
+#####TODO GENERATOR FUNCTION #######
+
+#shuffle samples first before running in generator
+#use sklearn.utils.shuffle(samples)
+def generator(samples, batch_size=32):
+	num_samples = len(samples)
+	while True:
+		for offset in range(0, num_samples, batch_size):
+			batch_samples=samples[offset:offset+batch_size]
+
+		yield(X_train,y_train)
 
 
 
@@ -77,7 +98,7 @@ from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooloing import MaxPooling2D
-
+from keras.layers import Cropping2D
 
 
 #################### basic network############
@@ -92,6 +113,12 @@ model.add(Dense(1))
 ##################LeNet##################
 """
 model = Sequential()
+
+###cropping###
+#model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320,3))) #use cropped images
+#model.add(Lambda(lambda x: x/255.0 - 0.5))  #remove line below to use cropped images
+############## remove line lambda to use cropping #####
+
 model.add(Lambda(lambda x: x/255.0 - 0.5, input shape=(160,320,3)))
 model.add(Convolution2D(6,5,5,activation="relu"))
 model.add(MaxPooling2D())
@@ -103,6 +130,27 @@ model.add(Dense(84))
 model.add(Dense(1))
 
 """
+
+
+#####################################
+#################Nvidia model########
+"""
+model = Sequential()
+model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160,320,3)))
+model.add(Cropping2D(cropping=((70,25),(0,0))))
+model.add(Convolution2D(24,5,5,subsample=(2,2), activation="relu"))
+model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
+model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
+model.add(Convolution2D(64,3,3, activation="relu"))
+model.add(Convolution2D(64,3,3, activation="relu"))
+model.add(Flatten())
+model.add(Dense(100))
+model.add(Dense(50))
+model.add(Dense(10))
+model.add(Dense(1))
+"""
+
+
 
 #### extras for reference
 #model.add(Dropout(0.5))
