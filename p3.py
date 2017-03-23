@@ -71,8 +71,9 @@ augmented_measurements = np.array(augmented_measurements)   #only contains cente
 images_left = np.array(images_left)
 images_right = np.array(images_right)
 
-images_all = augmented_images + images_left + images_right
-measurements_all = augmented_measurements + measurements_left +measurements_right
+images_all = np.concatenate(augmented_images, images_left, images_right)
+measurements_all = np.concatenate(augmented_measurements, measurements_left, measurements_right)
+
 
 X_train = np.array(images_all)
 y_train = np.array(measurements_all)
