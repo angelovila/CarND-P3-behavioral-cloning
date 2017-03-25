@@ -101,7 +101,7 @@ def generator(samples, batch_size=32):
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda
 from keras.layers.convolutional import Convolution2D
-from keras.layers.pooloing import MaxPooling2D
+from keras.layers.pooling import MaxPooling2D
 from keras.layers import Cropping2D
 
 
