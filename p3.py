@@ -159,8 +159,8 @@ def generator(samples, batch_size=32):
 sklearn.utils.shuffle(images_all)
 
 #split data into training and validation group
-train_samples = images_all[len(:images_all)*0.8]   #get the first 80% of data
-validation_samples = images_all[len(images_all)*0.8:]   #get the last 20% of data
+train_samples = images_all[:int(len(images_all)*0.8)]   #get the first 80% of data
+validation_samples = images_all[int(len(images_all)*0.8):]   #get the last 20% of data
 
 train_generator = generator(train_samples, batch_size=32)
 validation_generator = generator(validation_samples, batch_size=32)
@@ -211,8 +211,8 @@ model.add(Dense(1))
 #################Nvidia model########
 
 model = Sequential()
-model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320,3))
-model.add(Lambda(lambda x: x / 255.0 - 0.5)
+model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320,3)))
+model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Convolution2D(24,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
