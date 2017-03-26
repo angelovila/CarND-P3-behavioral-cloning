@@ -25,6 +25,7 @@ steering_correction = 0.2  # TODO update steering measurement for left and right
 ec2_image_folder = '../training/IMG/'  #TODO update to actual location of images when on ec2
 for line in lines:
 	source_path = line[0]
+	""" before generator
 	#get filenames of center, left, right images
 	filename_center_image = source_path.split('/')[-1]
 	filename_left_image = line[1].split('/')[-1]
@@ -51,6 +52,21 @@ for line in lines:
 	measurements_left.append(measurement + steering_correction)
 	measurements_right.append(measurement - steering_correction)
 
+	"""
+	current_path_center = ec2_image_folder + line[0].split('/')[-1]
+	current_path_left = ec2_image_folder + line[1].split('/')[-1]
+	current_path_right = ec2_image_folder + line[2].split('/')[-1]
+
+	measurement = float(line[3])
+	measurement_center = measurement
+	measurement_left = measurement + steering_correction
+	measurement_right = measurement - steering_correction
+
+	images_all.append((current_path_center, measurement_center))
+	images_all.append((current_path_left, measurement_left))
+	images_all.append((current_path_right, measurement_right))
+
+""" before generator
 ###TODO make images and measurements into numpy array
 images_center = np.array(images_center)
 measurements_center = np.array(measurements_center)
@@ -72,23 +88,21 @@ images_left = np.array(images_left)
 images_right = np.array(images_right)
 
 ##append all images into one list using generator
-X_train = []
-
 def generator_append_images():
   global augmented_images,images_left, images_right
   x = 0
   while x <len(augmented_images):
-    X_train.append(augmented_images[x])
+    images_all.append(augmented_images[x])
     x += 1
     yield
   x = 0
   while x < len(images_left):
-    X_train.append(images_left[x])
+    images_all.append(images_left[x])
     x += 1
     yield
   x = 0
   while x < len(images_right):
-    X_train.append(images_right[x])
+    images_all.append(images_right[x])
     x += 1
     yield
 
@@ -96,19 +110,13 @@ images_generator = generator_append_images()
 for i in range(len(augmented_images) + len(images_left) + len(images_right)):
   next(images_generator)
 
-X_train = np.array(X_train)
+#X_train = np.array(X_train)  #throws a memory error
 y_train = np.array(measurements_all)
 
 
-"""
-def generator_append_measurements():
-  global augmented_measurements, measurements_left, measurements_right
-  pass
-"""
 
 
 
-"""
 images_all = np.concatenate((augmented_images, images_left, images_right), axis=0)
 measurements_all = np.concatenate((augmented_measurements, measurements_left, measurements_right), axis=0)
 
@@ -121,17 +129,41 @@ y_train = np.array(measurements_all)
 
 
 #####TODO GENERATOR FUNCTION #######
-
+import sklearn
 #shuffle samples first before running in generator
 #use sklearn.utils.shuffle(samples)
+
+
 def generator(samples, batch_size=32):
-	num_samples = len(samples)
-	while True:
-		for offset in range(0, num_samples, batch_size):
-			batch_samples=samples[offset:offset+batch_size]
+    num_samples = len(samples)
+    while 1: # Loop forever so the generator never terminates
+        sklearn.utils.shuffle(samples)
+        for offset in range(0, num_samples, batch_size):
+            batch_samples = samples[offset:offset+batch_size]
 
-		yield(X_train,y_train)
+            images = []
+            angles = []
+            for batch_sample in batch_samples:
+                image = cv2.imread(batch_sample[0])
+                angle = batch_sample[1]
+                images.append(image)
+                angles.append(angle)
 
+            # trim image to only see section with road
+            X_train = np.array(images)
+            y_train = np.array(angles)
+            yield sklearn.utils.shuffle(X_train, y_train)
+
+
+#shuffle data first
+sklearn.utils.shuffle(images_all)
+
+#split data into training and validation group
+train_samples = images_all[len(:images_all)*0.8]   #get the first 80% of data
+validation_samples = images_all[len(images_all)*0.8:]   #get the last 20% of data
+
+train_generator = generator(train_samples, batch_size=32)
+validation_generator = generator(validation_samples, batch_size=32)
 
 
 ############ flat model  to start#########
@@ -179,8 +211,8 @@ model.add(Dense(1))
 #################Nvidia model########
 
 model = Sequential()
-model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160,320,3)))
-model.add(Cropping2D(cropping=((70,25),(0,0))))
+model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320,3))
+model.add(Lambda(lambda x: x / 255.0 - 0.5)
 model.add(Convolution2D(24,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
@@ -200,6 +232,22 @@ model.add(Dense(1))
 
 ###################
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
+
+#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)  #before generator
+
+""" example fit generator
+model.fit_generator(train_generator, samples_per_epoch= /
+            len(train_samples), validation_data=validation_generator, /
+            nb_val_samples=len(validation_samples), nb_epoch=3)
+"""
+
+
+model.compile(loss='mse', optimizer='adam')
+model.fit_generator(train_generator,
+	steps_per_epoch=32,
+	samples_per_epoch=len(train_samples),
+	validation_data=validation_generator,
+	nb_val_samples=len(validation_samples),
+	nb_epoch=4)
 
 model.save('model.h5')
