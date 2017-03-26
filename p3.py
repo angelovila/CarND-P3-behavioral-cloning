@@ -71,13 +71,51 @@ augmented_measurements = np.array(augmented_measurements)   #only contains cente
 images_left = np.array(images_left)
 images_right = np.array(images_right)
 
+##append all images into one list using generator
+X_train = []
+
+def generator_append_images():
+  global augmented_images,images_left, images_right
+  x = 0
+  while x <len(augmented_images):
+    X_train.append(augmented_images[x])
+    x += 1
+    yield
+  x = 0
+  while x < len(images_left):
+    X_train.append(images_left[x])
+    x += 1
+    yield
+  x = 0
+  while x < len(images_right):
+    X_train.append(images_right[x])
+    x += 1
+    yield
+
+images_generator = generator_append_images()
+for i in range(len(augmented_images) + len(images_left) + len(images_right)):
+  next(images_generator)
+
+X_train = np.array(X_train)
+y_train = np.array(measurements_all)
+
+
+"""
+def generator_append_measurements():
+  global augmented_measurements, measurements_left, measurements_right
+  pass
+"""
+
+
+
+"""
 images_all = np.concatenate((augmented_images, images_left, images_right), axis=0)
 measurements_all = np.concatenate((augmented_measurements, measurements_left, measurements_right), axis=0)
 
 
 X_train = np.array(images_all)
 y_train = np.array(measurements_all)
-
+"""
 
 
 
