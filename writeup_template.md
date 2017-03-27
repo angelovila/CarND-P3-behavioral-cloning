@@ -35,13 +35,14 @@ The goals / steps of this project are the following:
 ####1. Submission includes all required files and can be used to run the simulator in autonomous mode
 
 My project includes the following files:
-* model.py containing the script to create and train the model
+* p3.py containing the script to create and train the model
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
 * writeup_report.md or writeup_report.pdf summarizing the results
 
 ####2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
+
 ```sh
 python drive.py model.h5
 ```
@@ -58,21 +59,48 @@ My model consists of a convolution neural network with 3x3 filter sizes and dept
 
 The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
 
+
+Python file containing the model is p3.py
+
+I followed Nvidia's self driving car model that uses 3x3 convolution. 
+
+I inserted a cropping layer to remove the top part of the image to remove the horizon and have the training data focus on the road. (
+
+To normalize the data, I use a lambda layer (p3.py line )
+
+
 ####2. Attempts to reduce overfitting in the model
 
 The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
 
 The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
+
+----------
+The model was trained and tested and did not appear to be overfitting and therefore no dropout layer is inserted.
+
+The model was trained using data on a different track to help in generalization.
+
+
 ####3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model used an adam optimizer. (p3.py line ).
 
 ####4. Appropriate training data
 
 Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
 
 For details about how I created the training data, see the next section. 
+
+
+--------------
+
+Training data consist of the following strategies:
+-couple of laps with the intention of staying centered on the road on both tracks in both clockwise and counter-clockwise directions
+-lap recovering from the side of the road to center
+--both strategies are done in both clockwise and counter-clokwise
+
+
 
 ###Model Architecture and Training Strategy
 
