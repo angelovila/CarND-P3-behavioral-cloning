@@ -268,7 +268,7 @@ model.fit_generator(train_generator,
 	#samples_per_epoch=len(train_samples),
 	steps_per_epoch=steps_per_epoch,
 	validation_data=validation_generator,
-	validation_steps=100,
+	validation_steps=validation_steps,
 	epoch=epoch)
 
 model.save('model.h5')
