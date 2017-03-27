@@ -134,10 +134,10 @@ import sklearn
 #use sklearn.utils.shuffle(samples)
 
 
-def generator(samples, batch_size=32):
+def generator(samples, batch_size=100):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
-        sklearn.utils.shuffle(samples)
+        #sklearn.utils.shuffle(samples)
         for offset in range(0, num_samples, batch_size):
             batch_samples = samples[offset:offset+batch_size]
 
@@ -152,18 +152,22 @@ def generator(samples, batch_size=32):
             # trim image to only see section with road
             X_train = np.array(images)
             y_train = np.array(angles)
-            yield sklearn.utils.shuffle(X_train, y_train)
-
+            #yield sklearn.utils.shuffle(X_train, y_train)
+            yield(X_train, y_train)
 
 #shuffle data first
-sklearn.utils.shuffle(images_all)
+images_all = sklearn.utils.shuffle(images_all)
 
 #split data into training and validation group
 train_samples = images_all[:int(len(images_all)*0.8)]   #get the first 80% of data
+train_samples_len = len(train_samples)
 validation_samples = images_all[int(len(images_all)*0.8):]   #get the last 20% of data
+validation_samples_len = len(validation_samples)
 
-train_generator = generator(train_samples, batch_size=32)
-validation_generator = generator(validation_samples, batch_size=32)
+
+batch_size = 100
+train_generator = generator(train_samples, batch_size=batch_size)
+validation_generator = generator(validation_samples, batch_size=batch_size)
 
 
 ############ flat model  to start#########
@@ -231,7 +235,7 @@ model.add(Dense(1))
 #model.add(Dropout(0.5))
 
 ###################
-model.compile(loss='mse', optimizer='adam')
+##model.compile(loss='mse', optimizer='adam')
 
 #model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)  #before generator
 
@@ -240,14 +244,31 @@ model.fit_generator(train_generator, samples_per_epoch= /
             len(train_samples), validation_data=validation_generator, /
             nb_val_samples=len(validation_samples), nb_epoch=3)
 """
-
+import match
 
 model.compile(loss='mse', optimizer='adam')
+
+""" before
 model.fit_generator(train_generator,
-	steps_per_epoch=32,
-	samples_per_epoch=len(train_samples),
+	#steps_per_epoch=32,
+	#samples_per_epoch=len(train_samples),
+	samples_per_epoch=100,
 	validation_data=validation_generator,
-	nb_val_samples=len(validation_samples),
+	nb_val_samples=100,
 	nb_epoch=4)
+"""
+
+steps_per_epoch = math.ceil(train_samples_len/batch_size)
+validation_steps = math.ceil(validation_samples_len/batch_size)
+epoch = 4
+
+
+model.fit_generator(train_generator,
+	#steps_per_epoch=32,
+	#samples_per_epoch=len(train_samples),
+	steps_per_epoch=steps_per_epoch,
+	validation_data=validation_generator,
+	validation_steps=100,
+	epoch=epoch)
 
 model.save('model.h5')
