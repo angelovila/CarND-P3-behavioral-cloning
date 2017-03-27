@@ -120,6 +120,27 @@ The final step was to run the simulator to see how well the car was driving arou
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
+
+
+---------------
+
+
+Project was started by generating an augmented image and angle measurement of the center images. This was implemented as I thought everything starts with the data.
+
+I did however encountered a MemoryError when I start to test my working model and start to gather more training data. Turns out that my initial implementation of image augmentation has to be set as a generator in order for it to be successfully ran. Issue is, the way my code was structured, it would be complicated as I have my images (already read by cv2.imread) and angle measurement in different lists.
+
+Because I will not augment my image, I gathered training data by doing a a lap in the opposite direction.
+
+I found out that the fit_generator is easier to setup if the image and the angle are in a tuple. It would also make sense to only start reading the image in the generator (this realization made me decide to not use augmented image). At this time I have a good overview of what the architecture would be.
+
+In summary:
+-pre-process the data to have a list of tuples containing images file location and steering angle
+-since fit_generator doesn't divide by validation automatically, I shuffled then seperated my training and validation data first before running it in the generator
+-use a generator when training a model
+-use nvidia's model in keras
+
+
+
 ####2. Final Model Architecture
 
 The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
