@@ -244,7 +244,7 @@ model.fit_generator(train_generator, samples_per_epoch= /
             len(train_samples), validation_data=validation_generator, /
             nb_val_samples=len(validation_samples), nb_epoch=3)
 """
-import match
+import math
 
 model.compile(loss='mse', optimizer='adam')
 
@@ -260,7 +260,7 @@ model.fit_generator(train_generator,
 
 steps_per_epoch = math.ceil(train_samples_len/batch_size)
 validation_steps = math.ceil(validation_samples_len/batch_size)
-epoch = 4
+epochs = 4
 
 
 model.fit_generator(train_generator,
@@ -269,6 +269,6 @@ model.fit_generator(train_generator,
 	steps_per_epoch=steps_per_epoch,
 	validation_data=validation_generator,
 	validation_steps=validation_steps,
-	epoch=epoch)
+	epochs=epochs)
 
 model.save('model.h5')
