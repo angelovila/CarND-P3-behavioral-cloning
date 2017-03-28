@@ -147,7 +147,7 @@ def generator(samples, batch_size=100):
                 image = cv2.imread(batch_sample[0])
                 angle = batch_sample[1]
                 #grayscale image
-                image = np.average(image, axis=3)
+                image = np.average(image, axis=2)
                 images.append(image)
                 angles.append(angle)
 
@@ -200,7 +200,7 @@ model = Sequential()
 #model.add(Lambda(lambda x: x/255.0 - 0.5))  #remove line below to use cropped images
 ############## remove line lambda to use cropping #####
 
-model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape=(160,320,3)))
+model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape=(160,320)))
 model.add(Convolution2D(6,5,5,activation="relu"))
 model.add(MaxPooling2D())
 model.add(Convolution2D(6,5,5,activation="relu"))
