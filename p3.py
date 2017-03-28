@@ -146,6 +146,8 @@ def generator(samples, batch_size=100):
             for batch_sample in batch_samples:
                 image = cv2.imread(batch_sample[0])
                 angle = batch_sample[1]
+                #grayscale image
+                image = np.average(image, axis=3)
                 images.append(image)
                 angles.append(angle)
 
@@ -248,16 +250,15 @@ import math
 
 model.compile(loss='mse', optimizer='adam')
 
-""" before
+
 model.fit_generator(train_generator,
 	#steps_per_epoch=32,
-	#samples_per_epoch=len(train_samples),
-	samples_per_epoch=100,
+	samples_per_epoch=train_samples_len,
 	validation_data=validation_generator,
-	nb_val_samples=100,
+	nb_val_samples=validation_samples_len,
 	nb_epoch=4)
-"""
 
+"""
 steps_per_epoch = math.ceil(train_samples_len/batch_size)
 validation_steps = math.ceil(validation_samples_len/batch_size)
 epochs = 4
@@ -270,5 +271,5 @@ model.fit_generator(train_generator,
 	validation_data=validation_generator,
 	validation_steps=validation_steps,
 	epochs=epochs)
-
+"""
 model.save('model.h5')
