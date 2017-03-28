@@ -200,7 +200,7 @@ model = Sequential()
 #model.add(Lambda(lambda x: x/255.0 - 0.5))  #remove line below to use cropped images
 ############## remove line lambda to use cropping #####
 
-model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape=(160,320)))
+model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape=(160,320,3)))
 model.add(Convolution2D(6,5,5,activation="relu"))
 model.add(MaxPooling2D())
 model.add(Convolution2D(6,5,5,activation="relu"))
@@ -217,7 +217,7 @@ model.add(Dense(1))
 #################Nvidia model########
 
 model = Sequential()
-model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320,3)))
+model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320)))
 model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Convolution2D(24,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
