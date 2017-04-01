@@ -146,8 +146,6 @@ def generator(samples, batch_size=100):
             for batch_sample in batch_samples:
                 image = cv2.imread(batch_sample[0])
                 angle = batch_sample[1]
-                #grayscale image
-                image = np.average(image, axis=2)
                 images.append(image)
                 angles.append(angle)
 
@@ -266,10 +264,11 @@ epochs = 4
 
 model.fit_generator(train_generator,
 	#steps_per_epoch=32,
-	#samples_per_epoch=len(train_samples),
-	steps_per_epoch=steps_per_epoch,
+	samples_per_epoch=train_samples_len,
+	#steps_per_epoch=steps_per_epoch,
 	validation_data=validation_generator,
-	validation_steps=validation_steps,
+	#validation_steps=validation_steps,
+	nb_val_samples=validation_samples_len,
 	epochs=epochs)
 """
 model.save('model.h5')
