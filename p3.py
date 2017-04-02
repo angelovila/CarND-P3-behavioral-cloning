@@ -150,7 +150,7 @@ def generator(samples, batch_size=100):
                 image = image[70:140]
                 image = cv2.resize(image,(64,64))
                 #convert to RGB
-                image= cv2.cvtColor(imga, cv2.COLOR_BGR2RGB)
+                image= cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
                 images.append(image)
                 angles.append(angle)
