@@ -144,8 +144,14 @@ def generator(samples, batch_size=100):
             images = []
             angles = []
             for batch_sample in batch_samples:
+            	angle = batch_sample[1]
                 image = cv2.imread(batch_sample[0])
-                angle = batch_sample[1]
+                #crop
+                image = image[70:140]
+                image = cv2.resize(image,(64,64))
+                #convert to RGB
+                image= cv2.cvtColor(imga, cv2.COLOR_BGR2RGB)
+
                 images.append(image)
                 angles.append(angle)
 
@@ -216,7 +222,7 @@ model.add(Dense(1))
 
 model = Sequential()
 model.add(Cropping2D(cropping=((50,20),(0,0)), input_shape=(160,320)))
-model.add(Lambda(lambda x: x / 255.0 - 0.5))
+model.add(Lambda(lambda x: x / 255.0 - 0.5), input_shape=(64,64))
 model.add(Convolution2D(24,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(36,5,5,subsample=(2,2), activation="relu"))
 model.add(Convolution2D(48,5,5,subsample=(2,2), activation="relu"))
