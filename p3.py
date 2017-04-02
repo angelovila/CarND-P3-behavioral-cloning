@@ -144,7 +144,7 @@ def generator(samples, batch_size=100):
             images = []
             angles = []
             for batch_sample in batch_samples:
-            	angle = batch_sample[1]
+                angle = batch_sample[1]
                 image = cv2.imread(batch_sample[0])
                 #crop
                 image = image[70:140]
