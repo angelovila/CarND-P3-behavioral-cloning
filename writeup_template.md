@@ -55,28 +55,14 @@ The model.py file contains the code for training and saving the convolution neur
 
 ####1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
-
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
-
-
 Python file containing the model is p3.py
 
-I followed Nvidia's self driving car model that uses 3x3 convolution. 
-
-I inserted a cropping layer to remove the top part of the image to remove the horizon and have the training data focus on the road. (
-
-To normalize the data, I use a lambda layer (p3.py line )
+Model initially normalize the data using a lambda layer (p3: line) 
+Following Nvidia's self driving car model, It uses 5x5 convolutions with a 2x2 strides and then couple of 3x3 convolutions, all using RELU activation.
 
 
 ####2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
-
-
-----------
 The model was trained and tested and did not appear to be overfitting and therefore no dropout layer is inserted.
 
 The model was trained using data on a different track to help in generalization.
@@ -84,16 +70,15 @@ The model was trained using data on a different track to help in generalization.
 
 ####3. Model parameter tuning
 
-The model used an adam optimizer. (p3.py line ).
+The model used an adam optimizer. (p3.py line).
+
+Batch size of the generator doesn't seem to affect the model as much and sticked with 100
+
+Epochs was kept at a 4, further increasing seem to prolong the training time with minimal increase in accuracy.
+
+Steering correction used was 0.2. The recovery training data seem to not let the model be confused with straight or 0 angle steering.
 
 ####4. Appropriate training data
-
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
-
-For details about how I created the training data, see the next section. 
-
-
---------------
 
 Training data consist of the following strategies:
 -couple of laps with the intention of staying centered on the road on both tracks in both clockwise and counter-clockwise directions
@@ -105,25 +90,6 @@ Training data consist of the following strategies:
 
 ####1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
-
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
-
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
-
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
-
-
-
----------------
-
-
 Project was started by generating an augmented image and angle measurement of the center images. This was implemented as I thought everything starts with the data.
 
 I did however encountered a MemoryError when I start to test my working model and start to gather more training data. Turns out that my initial implementation of image augmentation has to be set as a generator in order for it to be successfully ran. Issue is, the way my code for augmentation  was structured in a way that  it would be complicated as I have my images (already read by cv2.imread) and angle measurement in different lists.
@@ -131,7 +97,9 @@ I did however encountered a MemoryError when I start to test my working model an
 
 I found out that the fit_generator is easier to setup if the image and the angle are in a tuple. It would also make sense to only start reading the image in the generator instead of a memory intesnsive and storing everything on a list. Upon reading the image, I only added two pre-processing steps which are cropping and resizing.
 
-After making a model, encountered an issue where there are parts of of the track where the car run off. I tried to get more training but still failed. Turns out that drive.py input image needs to be resized as well
+Cropping and resizing was later updated to be a lot smaller as it turns out, model works even with smaller images. Making the training run faster.
+
+After making a running model, upon testing, encountered an issue where there are parts of of the track where the car run off. I tried to get more training but still failed. Turns out that drive.py input image needs to be resized as well
 
 
 In summary:
@@ -145,36 +113,39 @@ In summary:
 
 ####2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+Input of 64,64,3
+Normalization layer
+Convolution(24,(5,5) with 2x2 strides)
+Convolution(36,(5,5) with 2x2 strides)
+Convolution(48,(5,5) with 2x2 strides)
+Convolution(64,(3,3))
+Flatten layer
+Fully Connected (100)
+Fully Connected (50)
+Fully Connected (10)
+Fully Connected (1)
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
 
 ####3. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+Training data was collected by running two laps on the track and then two laps running the opposite directions.
 
-![alt text][image2]
+On the 2nd track, collected data by running one lap and then another lap running the opposite direction.
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+Then, collected data by running a recovery lap.It is done by running at the side of the road and moving to the center of the road, recording only the process of centering to the road. This was exhaustively done.
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+Two issues seem to happen which were:
+1. Car seem to still un-recover and goes off the track
+2. there are parts on the track where car goes off the track.
 
-Then I repeated this process on track two in order to get more data points.
-
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
-
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+To remedy the issue
+1. C more data by doing more recovery laps in a higher angle. Instead of going to the side of the road and then centering, recovery data is collected by going more like an angle closer to perpendicular to the side of the road and then steering to be back to the center of the road.
+2. Recorded more data to the problem turns of the track.
 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+Images recorded at the side of the car is used by manipulating the steering angle recorded to the particular instand by 0.2.
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+All images have the horizon and the hood of the car cropped and resized to 64x64. Cropping helps the model avoid noise and resizing to a smaller image makes the model run significantly faster
+
+
+Data was shuffled prior to being fed into the generator. After shuffling data was divided into training and validation group.
