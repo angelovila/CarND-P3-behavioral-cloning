@@ -101,7 +101,6 @@ Training data consist of the following strategies:
 --both strategies are done in both clockwise and counter-clokwise
 
 
-
 ###Model Architecture and Training Strategy
 
 ####1. Solution Design Approach
@@ -127,18 +126,21 @@ At the end of the process, the vehicle is able to drive autonomously around the 
 
 Project was started by generating an augmented image and angle measurement of the center images. This was implemented as I thought everything starts with the data.
 
-I did however encountered a MemoryError when I start to test my working model and start to gather more training data. Turns out that my initial implementation of image augmentation has to be set as a generator in order for it to be successfully ran. Issue is, the way my code was structured, it would be complicated as I have my images (already read by cv2.imread) and angle measurement in different lists.
+I did however encountered a MemoryError when I start to test my working model and start to gather more training data. Turns out that my initial implementation of image augmentation has to be set as a generator in order for it to be successfully ran. Issue is, the way my code for augmentation  was structured in a way that  it would be complicated as I have my images (already read by cv2.imread) and angle measurement in different lists.
 
-Because I will not augment my image, I gathered training data by doing a a lap in the opposite direction.
 
-I found out that the fit_generator is easier to setup if the image and the angle are in a tuple. It would also make sense to only start reading the image in the generator (this realization made me decide to not use augmented image). At this time I have a good overview of what the architecture would be.
+I found out that the fit_generator is easier to setup if the image and the angle are in a tuple. It would also make sense to only start reading the image in the generator instead of a memory intesnsive and storing everything on a list. Upon reading the image, I only added two pre-processing steps which are cropping and resizing.
+
+After making a model, encountered an issue where there are parts of of the track where the car run off. I tried to get more training but still failed. Turns out that drive.py input image needs to be resized as well
+
 
 In summary:
--pre-process the data to have a list of tuples containing images file location and steering angle
+-pre-process the image by cropping and resizing
+-store the data to have a list of tuples containing images file location and steering angle
 -since fit_generator doesn't divide by validation automatically, I shuffled then seperated my training and validation data first before running it in the generator
 -use a generator when training a model
 -use nvidia's model in keras
-
+-resize input image of drive.py
 
 
 ####2. Final Model Architecture
