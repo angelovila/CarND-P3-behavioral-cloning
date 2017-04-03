@@ -21,8 +21,8 @@ with open('../training//driving_log.csv') as csvfile:
 images_all = []
 measurements = []
 
-steering_correction = 0.2  # TODO update steering measurement for left and right images
-ec2_image_folder = '../training/IMG/'  #TODO update to actual location of images when on ec2
+steering_correction = 0.2  # update steering measurement for left and right images
+ec2_image_folder = '../training/IMG/'  # update to actual location of images when on ec2
 for line in lines:
 	source_path = line[0]
 	current_path_center = ec2_image_folder + line[0].split('/')[-1]
@@ -76,6 +76,7 @@ validation_samples = images_all[int(len(images_all)*0.8):]   #get the last 20% o
 validation_samples_len = len(validation_samples)
 
 batch_size = 100
+epochs = 4
 train_generator = generator(train_samples, batch_size=batch_size)
 validation_generator = generator(validation_samples, batch_size=batch_size)
 
@@ -84,11 +85,11 @@ validation_generator = generator(validation_samples, batch_size=batch_size)
 
 model = Sequential()
 model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(64,64,3)))
-model.add(Conv2D(24,(1,1), activation="relu"))
-model.add(Conv2D(36,(2,2), activation="relu"))
-model.add(Conv2D(48,(2,2), activation="relu"))
-model.add(Conv2D(64,(1,1), activation="relu"))
-model.add(Conv2D(64,(1,1), activation="relu"))
+model.add(Conv2D(24,(5,5), strides=(2,2), activation="relu"))
+model.add(Conv2D(36,(5,5), strides=(2,2), activation="relu"))
+model.add(Conv2D(48,(5,5), strides=(2,2), activation="relu"))
+model.add(Conv2D(64,(3,3), activation="relu"))
+model.add(Conv2D(64,(3,3), activation="relu"))
 model.add(Flatten())
 model.add(Dense(100))
 model.add(Dense(50))
@@ -101,6 +102,6 @@ model.fit_generator(train_generator,
 	samples_per_epoch=train_samples_len,
 	validation_data=validation_generator,
 	nb_val_samples=validation_samples_len,
-	nb_epoch=4)
+	epochs=epochs)
 
 model.save('model.h5')
